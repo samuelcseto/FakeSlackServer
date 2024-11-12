@@ -1,6 +1,7 @@
 import User from '#models/user'
 import type { HttpContext } from '@adonisjs/core/http'
 import { registerUserValidator } from '#validators/register_user'
+import Ws from '#services/websocket_service'
 
 export default class AuthController {
   async register({ request }: HttpContext) {
