@@ -5,6 +5,7 @@ import { HttpContext } from '@adonisjs/core/http'
 import authConfig from '#config/auth'
 import { Socket } from 'socket.io'
 import Channel from '#models/channel'
+import Message from '#models/message'
 
 async function authenticateUser(token: string) {
   const request: Request = {
@@ -20,9 +21,10 @@ async function authenticateUser(token: string) {
 
   try {
     const user = await auth.authenticate()
+    console.log('User authenticated:', user.nickname)
     return user
   } catch (error) {
-    console.log(error)
+    console.log('Authentication failed:', error)
     return null
   }
 }
@@ -33,7 +35,7 @@ app.ready(() => {
   io?.use(async (socket, next) => {
     const token =
       socket.handshake.auth.token ||
-      'oat_NQ.N2diS0p5NGFSUVFFczE4RGp5MGhTUlFXTm02dDJjaXlFdGt2OFRDajYxMDE0NDI3'
+      'oat_Mg.NjZ3eHZfQVZfTGFVRnVfUGlaZ2RpY1F2VEk4ZUVDeGctUHcxb1NvVjM0NTE4OTMzMDE'
     const user = await authenticateUser(token)
     if (!user) {
       socket.disconnect()
@@ -47,8 +49,6 @@ app.ready(() => {
   })
 
   io?.on('connection', (socket) => {
-    console.log(socket.id)
-    console.log((socket.data.user as User).email)
     // Join user to his room
     socket.join('user-' + (socket.data.user as User).id.toString())
     socket.on('getChannels', async () => {
@@ -56,8 +56,20 @@ app.ready(() => {
         .preload('channels')
         .where('id', (socket.data.user as User).id)
         .firstOrFail()
-      console.log(user.channels)
       io?.to('user-' + (socket.data.user as User).id.toString()).emit('channels', user.channels)
+    })
+    socket.on('getMessages', async (channelId) => {
+      try {
+        console.log('Loading messages')
+        const messages = await Message.query()
+          .where('channelId', channelId.channelId)
+          .preload('author')
+          .orderBy('createdAt', 'asc')
+        socket.emit('messages', messages)
+      } catch (error) {
+        console.error('Error fetching messages:', error)
+        socket.emit('error', 'Failed to fetch messages')
+      }
     })
     socket.on('message', (message) => {
       console.log('message', message)

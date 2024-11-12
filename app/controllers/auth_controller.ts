@@ -19,6 +19,9 @@ export default class AuthController {
     const general = await Channel.findByOrFail('name', 'general')
     await user.related('channels').attach([general.id])
 
+    const globalChannel = await Channel.findByOrFail('name', 'global')
+    await user.related('channels').attach([globalChannel.id])
+
     return user
   }
 
@@ -29,7 +32,10 @@ export default class AuthController {
     const user = await User.verifyCredentials(email, password)
     const token = await User.accessTokens.create(user)
 
-    return token
+    return {
+      token: token,
+      user: user,
+    }
   }
 
   async logout({ auth }: HttpContext) {

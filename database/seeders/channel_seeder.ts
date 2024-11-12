@@ -1,11 +1,14 @@
 import Channel from '#models/channel'
 import { BaseSeeder } from '@adonisjs/lucid/seeders'
 
-export default class extends BaseSeeder {
+export default class ChannelSeeder extends BaseSeeder {
   async run() {
     const uniqueKey = 'name'
 
     await Channel.updateOrCreateMany(uniqueKey, [
+      {
+        name: 'global',
+      },
       {
         name: 'general',
       },
