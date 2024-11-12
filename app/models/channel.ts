@@ -10,6 +10,9 @@ export default class Channel extends BaseModel {
   @column()
   declare name: string
 
+  @column()
+  declare private: boolean
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 

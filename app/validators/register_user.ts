@@ -5,6 +5,19 @@ import vine from '@vinejs/vine'
  */
 export const registerUserValidator = vine.compile(
   vine.object({
+    firstName: vine.string().trim(),
+    lastName: vine.string().trim(),
+    nickname: vine
+      .string()
+      .trim()
+      .unique(async (db, value, field) => {
+        try {
+          const user = await User.findByOrFail('nickname', value)
+          return false
+        } catch (error) {
+          return true
+        }
+      }),
     email: vine
       .string()
       .trim()

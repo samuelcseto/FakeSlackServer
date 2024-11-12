@@ -9,6 +9,9 @@ export default class AuthController {
     const data = request.all()
     const payload = await registerUserValidator.validate(data)
     const user = await User.create({
+      firstName: payload.firstName,
+      lastName: payload.lastName,
+      nickname: payload.nickname,
       email: payload.email,
       password: payload.password,
     })
@@ -36,6 +39,7 @@ export default class AuthController {
   }
 
   async me({ auth }: HttpContext) {
-    return auth.getUserOrFail()
+    const user = await User.query().where('id', auth.user!.id).preload('channels').firstOrFail()
+    return user
   }
 }
