@@ -4,6 +4,7 @@ import User from '#models/user'
 import { HttpContext } from '@adonisjs/core/http'
 import authConfig from '#config/auth'
 import { Socket } from 'socket.io'
+import Channel from '#models/channel'
 
 async function authenticateUser(token: string) {
   const request: Request = {
@@ -50,6 +51,14 @@ app.ready(() => {
     console.log((socket.data.user as User).email)
     // Join user to his room
     socket.join('user-' + (socket.data.user as User).id.toString())
+    socket.on('getChannels', async () => {
+      const user = await User.query()
+        .preload('channels')
+        .where('id', (socket.data.user as User).id)
+        .firstOrFail()
+      console.log(user.channels)
+      io?.to('user-' + (socket.data.user as User).id.toString()).emit('channels', user.channels)
+    })
     socket.on('message', (message) => {
       console.log('message', message)
       io?.to('user-' + (socket.data.user as User).id.toString()).emit('message', 'Hello')
