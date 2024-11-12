@@ -1,16 +1,4 @@
 import vine from '@vinejs/vine'
-/*
-public schema = schema.create({
-    email: schema.string({}, [
-      rules.email(),
-      rules.unique({ table: 'users', column: 'email' })
-    ]),
-    password: schema.string({}, [
-      rules.minLength(8),
-      rules.confirmed('passwordConfirmation')
-    ])
-  })
-*/
 /**
  * Validates the post's creation action
  */
