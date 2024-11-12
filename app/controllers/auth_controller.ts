@@ -2,6 +2,7 @@ import User from '#models/user'
 import type { HttpContext } from '@adonisjs/core/http'
 import { registerUserValidator } from '#validators/register_user'
 import Ws from '#services/websocket_service'
+import Channel from '#models/channel'
 
 export default class AuthController {
   async register({ request }: HttpContext) {
@@ -12,8 +13,8 @@ export default class AuthController {
       password: payload.password,
     })
     // join user to general channel
-    //const general = await Channel.findByOrFail('name', 'general')
-    //await user.related('channels').attach([general.id])
+    const general = await Channel.findByOrFail('name', 'general')
+    await user.related('channels').attach([general.id])
 
     return user
   }
