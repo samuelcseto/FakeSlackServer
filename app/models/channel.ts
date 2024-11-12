@@ -1,7 +1,8 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column, hasMany } from '@adonisjs/lucid/orm'
+import { BaseModel, belongsTo, column, hasMany } from '@adonisjs/lucid/orm'
 import Message from '#models/message'
-import { type HasMany } from '@adonisjs/lucid/types/relations'
+import { type BelongsTo, type HasMany } from '@adonisjs/lucid/types/relations'
+import User from '#models/user'
 
 export default class Channel extends BaseModel {
   @column({ isPrimary: true })
@@ -12,6 +13,14 @@ export default class Channel extends BaseModel {
 
   @column()
   declare private: boolean
+
+  @column()
+  declare authorId: number
+
+  @belongsTo(() => User, {
+    foreignKey: 'authorId',
+  })
+  declare author: BelongsTo<typeof User>
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
