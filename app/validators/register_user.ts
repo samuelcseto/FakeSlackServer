@@ -1,3 +1,4 @@
+import User from '#models/user'
 import vine from '@vinejs/vine'
 /**
  * Validates the post's creation action
@@ -9,8 +10,12 @@ export const registerUserValidator = vine.compile(
       .trim()
       .email()
       .unique(async (db, value, field) => {
-        // TODO check unique email against DB
-        return true
+        try {
+          const user = await User.findByOrFail('email', value)
+          return false
+        } catch (error) {
+          return true
+        }
       }),
     password: vine.string().minLength(8).confirmed({ confirmationField: 'passwordConfirmation' }),
     passwordConfirmation: vine.string(),
