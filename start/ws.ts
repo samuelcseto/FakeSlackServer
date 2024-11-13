@@ -51,6 +51,7 @@ app.ready(() => {
   io?.on('connection', (socket) => {
     // Join user to his room
     socket.join('user-' + (socket.data.user as User).id.toString())
+
     socket.on('getChannels', async () => {
       const user = await User.query()
         .preload('channels')
@@ -58,6 +59,7 @@ app.ready(() => {
         .firstOrFail()
       io?.to('user-' + (socket.data.user as User).id.toString()).emit('channels', user.channels)
     })
+
     socket.on('getMessages', async (channelId) => {
       try {
         console.log('Loading messages')
@@ -71,10 +73,12 @@ app.ready(() => {
         socket.emit('error', 'Failed to fetch messages')
       }
     })
+
     socket.on('message', (message) => {
       console.log('message', message)
       io?.to('user-' + (socket.data.user as User).id.toString()).emit('message', 'Hello')
     })
+
     socket.on('disconnect', () => {
       console.log('user disconnected')
     })

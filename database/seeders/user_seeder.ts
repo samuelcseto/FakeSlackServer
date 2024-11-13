@@ -19,6 +19,11 @@ export default class UserSeeder extends BaseSeeder {
         password: 'password',
         nickname: 'Kate',
       },
+      {
+        email: 'mario@gmail.com',
+        password: 'Neviem999',
+        nickname: 'Mario',
+      },
     ])
   }
 }
