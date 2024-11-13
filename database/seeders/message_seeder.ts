@@ -7,7 +7,7 @@ export default class MessageSeeder extends BaseSeeder {
   public static environment = ['development', 'testing']
 
   public async run() {
-    const users = await User.all()
+    const users = await User.query().orderBy('id', 'asc')
     const channels = await Channel.all()
 
     if (users.length === 0) {
