@@ -1,6 +1,9 @@
 import User from '#models/user'
 import type { HttpContext } from '@adonisjs/core/http'
 import Channel from '#models/channel'
+import { DbAccessTokensProvider } from '@adonisjs/auth/access_tokens'
+import app from '@adonisjs/core/services/app'
+import authConfig from '#config/auth'
 
 export default class ChannelsController {
   public async create({ request, response }: HttpContext) {
@@ -11,13 +14,29 @@ export default class ChannelsController {
       return response.unauthorized({ message: 'Token is required' })
     }
 
-    const user = await User.findByOrFail('token', token)
+    const authResolver = await authConfig.resolver(app)
+    let ctx: HttpContext = {
+      request: request,
+    } as unknown as HttpContext
+    const auth = authResolver.guards.api(ctx)
 
-    const channel = await Channel.create({
-      name,
-      authorId: user.id,
-    })
+    try {
+      const user = await auth.authenticate()
 
-    return response.created(channel)
+      if (!user) {
+        return response.unauthorized({ message: 'Invalid token' })
+      }
+
+      const channel = await Channel.create({
+        name,
+        authorId: user.id,
+      })
+
+      console.log('Channel created:', channel.name)
+
+      return response.created(channel)
+    } catch (error) {
+      console.log('Authentication failed:', error)
+    }
   }
 }

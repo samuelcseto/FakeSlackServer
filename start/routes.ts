@@ -10,6 +10,7 @@
 import router from '@adonisjs/core/services/router'
 import { middleware } from './kernel.js'
 const AuthController = () => import('#controllers/auth_controller')
+const ChannelsController = () => import('#controllers/channels_controller')
 
 router
   .group(() => {
@@ -20,4 +21,4 @@ router
   })
   .prefix('auth')
 
-router.post('/channels', 'ChannelsController.create')
+router.post('/channels', [ChannelsController, 'create'])

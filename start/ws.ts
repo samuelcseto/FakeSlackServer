@@ -62,7 +62,6 @@ app.ready(() => {
 
     socket.on('getMessages', async (channelId) => {
       try {
-        console.log('Loading messages')
         const messages = await Message.query()
           .where('channelId', channelId.channelId)
           .preload('author')
