@@ -73,21 +73,31 @@ app.ready(() => {
       }
     })
 
-    socket.on('message', (message) => {
+    socket.on('message', async (message) => {
       console.log('message', message)
-      Message.create({
-        content: message.text,
-        channelId: message.channelId,
-        createdBy: (socket.data.user as User).id,
-      })
-        .then((newMessage) => {
-          io?.to('channel-' + message.channelId).emit('newMessage', newMessage)
+      try {
+        const newMessage = await Message.create({
+          content: message.text,
+          channelId: message.channelId,
+          createdBy: (socket.data.user as User).id,
         })
-        .catch((error) => {
-          console.error('Error saving message:', error)
-          socket.emit('error', 'Failed to save message')
+
+        const messageWithAuthor = await Message.query()
+          .where('id', newMessage.id)
+          .preload('author')
+          .firstOrFail()
+
+        const users = await User.query().whereHas('channels', (builder) => {
+          builder.where('channel_id', message.channelId)
         })
-      io?.to('user-' + (socket.data.user as User).id.toString()).emit('message', 'Hello')
+
+        users.forEach((user) => {
+          io?.to('user-' + user.id.toString()).emit('newMessage', messageWithAuthor)
+        })
+      } catch (error) {
+        console.error('Error saving message:', error)
+        socket.emit('error', 'Failed to save message')
+      }
     })
 
     socket.on('disconnect', () => {
