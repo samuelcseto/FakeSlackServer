@@ -34,6 +34,9 @@ export default class ChannelsController {
 
       console.log('Channel created:', channel.name)
 
+      // add the user to the channel
+      await user.related('channels').attach([channel.id])
+
       return response.created(channel)
     } catch (error) {
       console.log('Authentication failed:', error)
