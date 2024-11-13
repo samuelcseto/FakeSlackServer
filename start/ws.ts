@@ -75,6 +75,18 @@ app.ready(() => {
 
     socket.on('message', (message) => {
       console.log('message', message)
+      Message.create({
+        content: message.text,
+        channelId: message.channelId,
+        createdBy: (socket.data.user as User).id,
+      })
+        .then((newMessage) => {
+          io?.to('channel-' + message.channelId).emit('newMessage', newMessage)
+        })
+        .catch((error) => {
+          console.error('Error saving message:', error)
+          socket.emit('error', 'Failed to save message')
+        })
       io?.to('user-' + (socket.data.user as User).id.toString()).emit('message', 'Hello')
     })
 
