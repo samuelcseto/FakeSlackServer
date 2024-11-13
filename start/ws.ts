@@ -100,6 +100,17 @@ app.ready(() => {
       }
     })
 
+    socket.on('leaveChannel', async (channelId) => {
+      try {
+        const user = await User.findOrFail((socket.data.user as User).id)
+        await user.related('channels').detach([channelId.channelId])
+        socket.emit('channelLeft', channelId.channelId)
+      } catch (error) {
+        console.error('Error leaving channel:', error)
+        socket.emit('error', 'Failed to leave channel')
+      }
+    })
+
     socket.on('disconnect', () => {
       console.log('user disconnected')
     })
