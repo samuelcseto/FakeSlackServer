@@ -21,4 +21,4 @@ router
   })
   .prefix('auth')
 
-router.post('/channels', [ChannelsController, 'create'])
+router.post('/channels', [ChannelsController, 'create']).use(middleware.auth())
