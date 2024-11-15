@@ -92,6 +92,7 @@ app.ready(() => {
         })
 
         users.forEach((user) => {
+          console.log('user', user.id)
           io?.to('user-' + user.id.toString()).emit('newMessage', messageWithAuthor)
         })
       } catch (error) {
@@ -102,8 +103,15 @@ app.ready(() => {
 
     socket.on('leaveChannel', async (channelId) => {
       try {
+        const channel = await Channel.findOrFail(channelId.channelId)
         const user = await User.findOrFail((socket.data.user as User).id)
-        await user.related('channels').detach([channelId.channelId])
+
+        if (channel.authorId === user.id) {
+          channel.delete()
+        } else {
+          await user.related('channels').detach([channel.id])
+        }
+
         socket.emit('channelLeft', channelId.channelId)
       } catch (error) {
         console.error('Error leaving channel:', error)

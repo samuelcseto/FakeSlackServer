@@ -22,3 +22,5 @@ router
   .prefix('auth')
 
 router.post('/channels', [ChannelsController, 'create']).use(middleware.auth())
+router.post('/channel/join', [ChannelsController, 'join']).use(middleware.auth())
+router.post('/channel/invite', [ChannelsController, 'inviteUser']).use(middleware.auth())
