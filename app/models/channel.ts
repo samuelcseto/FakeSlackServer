@@ -17,16 +17,16 @@ export default class Channel extends BaseModel {
   @column()
   declare authorId: number
 
-  @belongsTo(() => User, {
-    foreignKey: 'authorId',
-  })
-  declare author: BelongsTo<typeof User>
-
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
+
+  @belongsTo(() => User, {
+    foreignKey: 'authorId',
+  })
+  declare author: BelongsTo<typeof User>
 
   @hasMany(() => Message, {
     foreignKey: 'channelId',

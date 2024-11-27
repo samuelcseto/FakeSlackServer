@@ -39,6 +39,16 @@ export default class MessageSeeder extends BaseSeeder {
           createdBy: users[2].id,
           channelId: generalChannel.id,
         },
+        {
+          content: 'This is a general announcement.',
+          createdBy: users[0].id,
+          channelId: generalChannel.id,
+        },
+        ...Array.from({ length: 100 }).map((_, index) => ({
+          content: `General message ${index + 1}`,
+          createdBy: users[index % users.length].id,
+          channelId: generalChannel.id,
+        })),
       ])
     }
 
