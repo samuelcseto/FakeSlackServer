@@ -1,7 +1,7 @@
 import { DateTime } from 'luxon'
-import { BaseModel, belongsTo, column, hasMany } from '@adonisjs/lucid/orm'
+import { BaseModel, belongsTo, column, hasMany, manyToMany } from '@adonisjs/lucid/orm'
 import Message from '#models/message'
-import { type BelongsTo, type HasMany } from '@adonisjs/lucid/types/relations'
+import { type ManyToMany, type BelongsTo, type HasMany } from '@adonisjs/lucid/types/relations'
 import User from '#models/user'
 
 export default class Channel extends BaseModel {
@@ -32,4 +32,9 @@ export default class Channel extends BaseModel {
     foreignKey: 'channelId',
   })
   declare messages: HasMany<typeof Message>
+
+  @manyToMany(() => User, {
+    pivotTable: 'channel_users',
+  })
+  declare users: ManyToMany<typeof User>
 }
