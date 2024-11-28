@@ -28,3 +28,6 @@ router
   .delete('/channel/leave/:channelId', [ChannelsController, 'leaveChannel'])
   .use(middleware.auth())
 router.get('/channel/users/:channelId', [ChannelsController, 'listUsers']).use(middleware.auth())
+router
+  .get('/channel/messages/:channelId/:page', [ChannelsController, 'getMessages'])
+  .use(middleware.auth())

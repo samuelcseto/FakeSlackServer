@@ -1,6 +1,7 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import Channel from '#models/channel'
 import User from '#models/user'
+import Message from '#models/message'
 
 export default class ChannelsController {
   public async create({ request, response, auth }: HttpContext) {
@@ -55,7 +56,9 @@ export default class ChannelsController {
       return response.notFound({ message: 'User not found' })
     }
 
-    // TODO: Check if user is already in the channel
+    if (await invitedUser.related('channels').query().where('channel_id', channelId).first()) {
+      return response.badRequest({ message: 'User is already in the channel' })
+    }
 
     await invitedUser.related('channels').attach([channel.id])
 
@@ -64,7 +67,6 @@ export default class ChannelsController {
 
   public async leaveChannel({ request, response, auth }: HttpContext) {
     const channelId = request.param('channelId')
-    console.log('Channel ID:', channelId)
     const user = auth.getUserOrFail()
 
     const channel = await Channel.findOrFail(channelId)
@@ -85,5 +87,35 @@ export default class ChannelsController {
     const users = await channel.related('users').query()
 
     return response.ok(users)
+  }
+
+  public async getMessages({ request, response }: HttpContext) {
+    const channelId = request.param('channelId')
+    let page = request.param('page')
+    const pageSize = 20
+
+    const total = await Message.query().where('channelId', channelId).count('* as total')
+    const totalCount = Number(total[0].$extras.total)
+
+    const messages = await Message.query()
+      .where('channelId', channelId)
+      .preload('author')
+      .orderBy('createdAt', 'asc')
+      .offset(Math.max(totalCount - page * pageSize, 0))
+      .limit(pageSize)
+
+    if (page >= Math.ceil(totalCount / pageSize)) {
+      page = Math.ceil(totalCount / pageSize)
+    }
+
+    return response.ok({
+      messages: messages,
+      pagination: {
+        total: totalCount,
+        page: Number.parseInt(page),
+        pageSize: pageSize,
+        totalPages: Math.ceil(totalCount / pageSize),
+      },
+    })
   }
 }

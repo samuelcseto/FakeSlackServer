@@ -86,40 +86,6 @@ app.ready(() => {
       io?.to('user-' + (socket.data.user as User).id.toString()).emit('channels', user.channels)
     })
 
-    socket.on('getMessages', async ({ channelId, page = 1, pageSize = 20 }) => {
-      try {
-        // Get total count first
-        const total = await Message.query().where('channelId', channelId).count('* as total')
-        const totalCount = Number(total[0].$extras.total)
-
-        // Get paginated messages from the end, ordered by newest first
-        const messages = await Message.query()
-          .where('channelId', channelId)
-          .preload('author')
-          .orderBy('createdAt', 'asc')
-          .offset(Math.max(totalCount - page * pageSize, 0))
-          .limit(pageSize)
-
-        if (page >= Math.ceil(totalCount / pageSize)) {
-          page = Math.ceil(totalCount / pageSize)
-        }
-
-        // Send paginated response
-        socket.emit('fetchMessages', {
-          data: messages,
-          pagination: {
-            total: totalCount,
-            page: page,
-            pageSize: pageSize,
-            totalPages: Math.ceil(totalCount / pageSize),
-          },
-        })
-      } catch (error) {
-        console.error('Error fetching messages:', error)
-        socket.emit('error', 'Failed to fetch messages')
-      }
-    })
-
     socket.on('sendMessage', async (message) => {
       try {
         const newMessage = await Message.create({
