@@ -27,3 +27,4 @@ router.post('/channel/invite', [ChannelsController, 'inviteUser']).use(middlewar
 router
   .delete('/channel/leave/:channelId', [ChannelsController, 'leaveChannel'])
   .use(middleware.auth())
+router.get('/channel/users/:channelId', [ChannelsController, 'listUsers']).use(middleware.auth())

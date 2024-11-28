@@ -77,4 +77,13 @@ export default class ChannelsController {
       return response.ok({ message: 'User left channel' })
     }
   }
+
+  public async listUsers({ request, response }: HttpContext) {
+    const channelId = request.param('channelId')
+
+    const channel = await Channel.findOrFail(channelId)
+    const users = await channel.related('users').query()
+
+    return response.ok(users)
+  }
 }
