@@ -3,7 +3,6 @@ import Ws from '#services/websocket_service'
 import User from '#models/user'
 import { HttpContext } from '@adonisjs/core/http'
 import authConfig from '#config/auth'
-import Channel from '#models/channel'
 import Message from '#models/message'
 
 async function authenticateUser(token: string) {
@@ -51,12 +50,32 @@ app.ready(() => {
     // Join user to his room
     socket.join('user-' + (socket.data.user as User).id.toString())
 
-    socket.on('joinChannel', async (channelId) => {
-      socket.join('channel-' + channelId.channelId.toString())
+    socket.on('joinChannel', async (data) => {
+      const roomName = 'channel-' + data.channelId
+      await socket.join(roomName)
     })
 
-    socket.on('leaveChannel', async (channelId) => {
-      socket.leave('channel-' + channelId.channelId.toString())
+    socket.on('leaveChannel', async (data) => {
+      const roomName = 'channel-' + data.channelId
+      await socket.leave(roomName)
+    })
+
+    socket.on('sendTyping', async (data) => {
+      const roomName = 'channel-' + data.channelId
+
+      const room = io.sockets.adapter.rooms.get(roomName)
+      if (!room) {
+        return
+      }
+
+      const recipients = Array.from(room).filter((id) => id !== socket.id)
+
+      recipients.forEach((recipient) => {
+        io.to(recipient).emit('getTyping', {
+          userNickname: (socket.data.user as User).nickname,
+          text: data.text,
+        })
+      })
     })
 
     socket.on('getChannels', async () => {
@@ -102,7 +121,6 @@ app.ready(() => {
     })
 
     socket.on('sendMessage', async (message) => {
-      console.log('message', message)
       try {
         const newMessage = await Message.create({
           content: message.text,
