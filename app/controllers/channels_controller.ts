@@ -22,21 +22,21 @@ export default class ChannelsController {
     const { privateBool } = request.only(['privateBool'])
     const user = auth.getUserOrFail()
 
-    try {
-      const channel = await Channel.query().where('name', channelName).firstOrFail()
+    const channel = await Channel.query().where('name', channelName).first()
+    if (channel) {
       if (channel.private) {
         return response.forbidden({ message: 'Channel is private' })
       }
       await user.related('channels').attach([channel.id])
       return response.created(channel)
-    } catch (error) {
-      const channel = await Channel.create({
+    } else {
+      const newChannel = await Channel.create({
         name: channelName,
         authorId: user.id,
         private: privateBool,
       })
-      await user.related('channels').attach([channel.id])
-      return response.created(channel)
+      await user.related('channels').attach([newChannel.id])
+      return response.created(newChannel)
     }
   }
 
@@ -60,5 +60,21 @@ export default class ChannelsController {
     await invitedUser.related('channels').attach([channel.id])
 
     return response.created(channel)
+  }
+
+  public async leaveChannel({ request, response, auth }: HttpContext) {
+    const channelId = request.param('channelId')
+    console.log('Channel ID:', channelId)
+    const user = auth.getUserOrFail()
+
+    const channel = await Channel.findOrFail(channelId)
+
+    if (channel.authorId === user.id) {
+      channel.delete()
+      return response.ok({ message: 'Channel deleted' })
+    } else {
+      await user.related('channels').detach([channel.id])
+      return response.ok({ message: 'User left channel' })
+    }
   }
 }

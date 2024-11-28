@@ -51,6 +51,14 @@ app.ready(() => {
     // Join user to his room
     socket.join('user-' + (socket.data.user as User).id.toString())
 
+    socket.on('joinChannel', async (channelId) => {
+      socket.join('channel-' + channelId.channelId.toString())
+    })
+
+    socket.on('leaveChannel', async (channelId) => {
+      socket.leave('channel-' + channelId.channelId.toString())
+    })
+
     socket.on('getChannels', async () => {
       const user = await User.query()
         .preload('channels')
@@ -59,7 +67,6 @@ app.ready(() => {
       io?.to('user-' + (socket.data.user as User).id.toString()).emit('channels', user.channels)
     })
 
-    // ws.ts
     socket.on('getMessages', async ({ channelId, page = 1, pageSize = 20 }) => {
       try {
         // Get total count first
@@ -79,7 +86,7 @@ app.ready(() => {
         }
 
         // Send paginated response
-        socket.emit('messages', {
+        socket.emit('fetchMessages', {
           data: messages,
           pagination: {
             total: totalCount,
@@ -94,7 +101,7 @@ app.ready(() => {
       }
     })
 
-    socket.on('message', async (message) => {
+    socket.on('sendMessage', async (message) => {
       console.log('message', message)
       try {
         const newMessage = await Message.create({
@@ -119,24 +126,6 @@ app.ready(() => {
       } catch (error) {
         console.error('Error saving message:', error)
         socket.emit('error', 'Failed to save message')
-      }
-    })
-
-    socket.on('leaveChannel', async (channelId) => {
-      try {
-        const channel = await Channel.findOrFail(channelId.channelId)
-        const user = await User.findOrFail((socket.data.user as User).id)
-
-        if (channel.authorId === user.id) {
-          channel.delete()
-        } else {
-          await user.related('channels').detach([channel.id])
-        }
-
-        socket.emit('channelLeft', channelId.channelId)
-      } catch (error) {
-        console.error('Error leaving channel:', error)
-        socket.emit('error', 'Failed to leave channel')
       }
     })
 
