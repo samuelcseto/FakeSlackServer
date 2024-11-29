@@ -10,6 +10,7 @@
 
 import router from '@adonisjs/core/services/router'
 import server from '@adonisjs/core/services/server'
+import { ChannelCleaner } from '#services/channel_cleaner'
 
 /**
  * The error handler is used to convert an exception
@@ -44,3 +45,6 @@ router.use([
 export const middleware = router.named({
   auth: () => import('#middleware/auth_middleware'),
 })
+
+// Start the channel cleaning cron job
+ChannelCleaner.startCleaning()

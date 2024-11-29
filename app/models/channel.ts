@@ -18,6 +18,9 @@ export default class Channel extends BaseModel {
   declare authorId: number
 
   @column.dateTime({ autoCreate: true })
+  declare lastActivity: DateTime
+
+  @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
