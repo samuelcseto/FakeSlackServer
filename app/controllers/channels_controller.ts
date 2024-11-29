@@ -123,6 +123,12 @@ export default class ChannelsController {
     const user = auth.getUserOrFail()
     await user.load('channels')
 
-    return response.ok(user.channels)
+    const simplifiedChannels = user.channels.map((channel) => ({
+      id: channel.id,
+      name: channel.name,
+      isAuthor: channel.authorId === user.id,
+    }))
+
+    return response.ok(simplifiedChannels)
   }
 }
