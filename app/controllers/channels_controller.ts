@@ -118,4 +118,11 @@ export default class ChannelsController {
       },
     })
   }
+
+  public async getChannels({ response, auth }: HttpContext) {
+    const user = auth.getUserOrFail()
+    await user.load('channels')
+
+    return response.ok(user.channels)
+  }
 }
