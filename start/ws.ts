@@ -4,6 +4,8 @@ import User from '#models/user'
 import { HttpContext } from '@adonisjs/core/http'
 import authConfig from '#config/auth'
 import Message from '#models/message'
+import Channel from '#models/channel'
+import { DateTime } from 'luxon'
 
 async function authenticateUser(token: string) {
   const request: Request = {
@@ -102,6 +104,10 @@ app.ready(() => {
         const users = await User.query().whereHas('channels', (builder) => {
           builder.where('channel_id', message.channelId)
         })
+
+        const channel = await Channel.findOrFail(message.channelId)
+        channel.lastActivity = DateTime.now()
+        await channel.save()
 
         users.forEach((user) => {
           console.log('user', user.id)
