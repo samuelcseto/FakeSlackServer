@@ -80,14 +80,6 @@ app.ready(() => {
       })
     })
 
-    socket.on('getChannels', async () => {
-      const user = await User.query()
-        .preload('channels')
-        .where('id', (socket.data.user as User).id)
-        .firstOrFail()
-      io?.to('user-' + (socket.data.user as User).id.toString()).emit('channels', user.channels)
-    })
-
     socket.on('sendMessage', async (message) => {
       try {
         const newMessage = await Message.create({
@@ -121,6 +113,44 @@ app.ready(() => {
 
     socket.on('disconnect', () => {
       console.log('user disconnected')
+    })
+
+    socket.on('inviteUser', async (data) => {
+      // Find the user to invite
+      console.log(data)
+      const invitedUser = await User.findBy('nickname', data.userNickname)
+      if (!invitedUser) {
+        socket.emit('error', 'User not found')
+        return
+      }
+
+      const channel = await Channel.findOrFail(data.channelId)
+
+      // Only the author can invite users to private channels
+      if (channel.private && channel.authorId !== (socket.data.user as User).id) {
+        socket.emit('error', 'Only the author can invite users')
+        return
+      }
+
+      const userInDB = await invitedUser
+        .related('channels')
+        .query()
+        .where('channel_id', data.channelId)
+        .first()
+      if (userInDB) {
+        socket.emit('error', 'User is already in the channel')
+        return
+      }
+
+      await invitedUser.related('channels').attach([channel.id])
+      io.to('user-' + socket.data.user.id.toString()).emit('inviteUserSuccess', {})
+
+      io.to('user-' + invitedUser.id.toString()).emit('channelInvited', {
+        id: channel.id,
+        name: channel.name,
+        isAuthor: false,
+        private: channel.private,
+      })
     })
   })
 })
