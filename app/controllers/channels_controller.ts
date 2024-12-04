@@ -46,7 +46,9 @@ export default class ChannelsController {
     const user = auth.getUserOrFail()
 
     const channel = await Channel.query().where('id', channelId).firstOrFail()
-    if (channel.authorId !== user.id) {
+
+    // Only the author can invite users to private channels
+    if (channel.private && channel.authorId !== user.id) {
       return response.forbidden({ message: 'Only the author can invite users' })
     }
 
@@ -127,6 +129,7 @@ export default class ChannelsController {
       id: channel.id,
       name: channel.name,
       isAuthor: channel.authorId === user.id,
+      private: channel.private,
     }))
 
     return response.ok(simplifiedChannels)
