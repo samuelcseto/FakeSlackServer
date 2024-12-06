@@ -102,7 +102,6 @@ app.ready(() => {
         await channel.save()
 
         users.forEach((user) => {
-          console.log('user', user.id)
           io?.to('user-' + user.id.toString()).emit('newMessage', messageWithAuthor)
         })
       } catch (error) {
