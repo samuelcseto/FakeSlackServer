@@ -9,6 +9,7 @@
 
 import router from '@adonisjs/core/services/router'
 import { middleware } from './kernel.js'
+const UserController = () => import('#controllers/user_controller')
 const AuthController = () => import('#controllers/auth_controller')
 const ChannelsController = () => import('#controllers/channels_controller')
 
@@ -20,6 +21,8 @@ router
     router.get('me', [AuthController, 'me']).use(middleware.auth())
   })
   .prefix('auth')
+
+router.post('switch-status', [UserController, 'switchStatus']).use(middleware.auth())
 
 router.get('/channels', [ChannelsController, 'getChannels']).use(middleware.auth())
 router.post('/channels', [ChannelsController, 'create']).use(middleware.auth())

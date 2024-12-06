@@ -5,17 +5,22 @@ import Message from '#models/message'
 
 export default class ChannelsController {
   public async create({ request, response, auth }: HttpContext) {
-    const { name } = request.only(['name'])
+    const { channelName } = request.only(['channelName'])
+    const { privateBool } = request.only(['privateBool'])
     const user = auth.getUserOrFail()
 
-    const channel = await Channel.create({
-      name,
-      authorId: user.id,
-    })
-
-    await user.related('channels').attach([channel.id])
-
-    return response.created(channel)
+    const channel = await Channel.query().where('name', channelName).first()
+    if (channel) {
+      return response.badRequest({ message: 'Channel already exists' })
+    } else {
+      const newChannel = await Channel.create({
+        name: channelName,
+        authorId: user.id,
+        private: privateBool,
+      })
+      await user.related('channels').attach([newChannel.id])
+      return response.created(newChannel)
+    }
   }
 
   public async join({ request, response, auth }: HttpContext) {
@@ -29,7 +34,7 @@ export default class ChannelsController {
         return response.forbidden({ message: 'Channel is private' })
       }
       await user.related('channels').attach([channel.id])
-      return response.created(channel)
+      return response.ok(channel)
     } else {
       const newChannel = await Channel.create({
         name: channelName,
