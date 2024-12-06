@@ -40,4 +40,10 @@ export default class Channel extends BaseModel {
     pivotTable: 'channel_users',
   })
   declare users: ManyToMany<typeof User>
+
+  // app/models/channel.ts
+  @manyToMany(() => User, {
+    pivotTable: 'user_kicks',
+  })
+  declare kicksInChannel: ManyToMany<typeof User>
 }

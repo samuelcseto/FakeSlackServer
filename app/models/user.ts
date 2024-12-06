@@ -54,5 +54,30 @@ export default class User extends compose(BaseModel, AuthFinder) {
   })
   declare channels: ManyToMany<typeof Channel>
 
+  @manyToMany(() => User, {
+    pivotTable: 'user_kicks',
+    pivotForeignKey: 'voted_by_id',
+    pivotRelatedForeignKey: 'voted_for_id',
+    pivotTimestamps: true,
+  })
+  declare kicksGiven: ManyToMany<typeof User>
+
+  @manyToMany(() => User, {
+    pivotTable: 'user_kicks',
+    pivotForeignKey: 'voted_for_id',
+    pivotRelatedForeignKey: 'voted_by_id',
+    pivotColumns: ['channel_id'],
+    pivotTimestamps: true,
+  })
+  declare kicksReceived: ManyToMany<typeof User>
+
+  @manyToMany(() => Channel, {
+    pivotTable: 'user_bans',
+    pivotForeignKey: 'ban_user_id',
+    pivotRelatedForeignKey: 'channel_id',
+    pivotTimestamps: true,
+  })
+  declare bans: ManyToMany<typeof Channel>
+
   static accessTokens = DbAccessTokensProvider.forModel(User)
 }

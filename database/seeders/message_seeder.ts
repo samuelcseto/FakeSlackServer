@@ -8,6 +8,8 @@ export default class MessageSeeder extends BaseSeeder {
 
   public async run() {
     const users = await User.query().orderBy('id', 'asc')
+    const filteredUsers = users.filter((user) => user.nickname !== 'Admin')
+
     const channels = await Channel.all()
 
     if (users.length === 0) {
@@ -26,27 +28,27 @@ export default class MessageSeeder extends BaseSeeder {
       await Message.createMany([
         {
           content: 'Welcome to the general channel!',
-          createdBy: users[0].id,
+          createdBy: filteredUsers[0].id,
           channelId: generalChannel.id,
         },
         {
           content: 'Hello everyone!',
-          createdBy: users[1].id,
+          createdBy: filteredUsers[1].id,
           channelId: generalChannel.id,
         },
         {
           content: 'Good to see you all here.',
-          createdBy: users[2].id,
+          createdBy: filteredUsers[2].id,
           channelId: generalChannel.id,
         },
         {
           content: 'This is a general announcement.',
-          createdBy: users[0].id,
+          createdBy: filteredUsers[0].id,
           channelId: generalChannel.id,
         },
         ...Array.from({ length: 100 }).map((_, index) => ({
           content: `General message ${index + 1}`,
-          createdBy: users[index % users.length].id,
+          createdBy: filteredUsers[index % filteredUsers.length].id,
           channelId: generalChannel.id,
         })),
       ])
@@ -60,17 +62,17 @@ export default class MessageSeeder extends BaseSeeder {
       await Message.createMany([
         {
           content: 'Welcome to the global channel!',
-          createdBy: users[0].id,
+          createdBy: filteredUsers[0].id,
           channelId: globalChannel.id,
         },
         {
           content: 'This is a global announcement.',
-          createdBy: users[1].id,
+          createdBy: filteredUsers[1].id,
           channelId: globalChannel.id,
         },
         {
           content: 'Stay tuned for more updates.',
-          createdBy: users[2].id,
+          createdBy: filteredUsers[2].id,
           channelId: globalChannel.id,
         },
       ])
