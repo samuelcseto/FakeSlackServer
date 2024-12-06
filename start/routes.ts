@@ -27,10 +27,6 @@ router.post('switch-status', [UserController, 'switchStatus']).use(middleware.au
 router.get('/channels', [ChannelsController, 'getChannels']).use(middleware.auth())
 router.post('/channels', [ChannelsController, 'create']).use(middleware.auth())
 router.post('/channel/join', [ChannelsController, 'join']).use(middleware.auth())
-router.post('/channel/invite', [ChannelsController, 'inviteUser']).use(middleware.auth())
-router
-  .delete('/channel/leave/:channelId', [ChannelsController, 'leaveChannel'])
-  .use(middleware.auth())
 router.get('/channel/users/:channelId', [ChannelsController, 'listUsers']).use(middleware.auth())
 router
   .get('/channel/messages/:channelId/:page', [ChannelsController, 'getMessages'])

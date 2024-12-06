@@ -33,6 +33,10 @@ export default class ChannelsController {
       if (channel.private) {
         return response.forbidden({ message: 'Channel is private' })
       }
+      const hasBan = await user.related('bans').query().where('channel_id', channel.id).first()
+      if (hasBan) {
+        return response.forbidden({ message: 'You are banned from this channel' })
+      }
       await user.related('channels').attach([channel.id])
       return response.ok(channel)
     } else {
@@ -43,47 +47,6 @@ export default class ChannelsController {
       })
       await user.related('channels').attach([newChannel.id])
       return response.created(newChannel)
-    }
-  }
-
-  public async inviteUser({ request, response, auth }: HttpContext) {
-    const { channelId, userNickname } = request.only(['channelId', 'userNickname'])
-    const user = auth.getUserOrFail()
-
-    const channel = await Channel.query().where('id', channelId).firstOrFail()
-
-    // Only the author can invite users to private channels
-    if (channel.private && channel.authorId !== user.id) {
-      return response.forbidden({ message: 'Only the author can invite users' })
-    }
-
-    const invitedUser = await User.findBy('nickname', userNickname)
-
-    if (!invitedUser) {
-      return response.notFound({ message: 'User not found' })
-    }
-
-    if (await invitedUser.related('channels').query().where('channel_id', channelId).first()) {
-      return response.badRequest({ message: 'User is already in the channel' })
-    }
-
-    await invitedUser.related('channels').attach([channel.id])
-
-    return response.created(channel)
-  }
-
-  public async leaveChannel({ request, response, auth }: HttpContext) {
-    const channelId = request.param('channelId')
-    const user = auth.getUserOrFail()
-
-    const channel = await Channel.findOrFail(channelId)
-
-    if (channel.authorId === user.id) {
-      channel.delete()
-      return response.ok({ message: 'Channel deleted' })
-    } else {
-      await user.related('channels').detach([channel.id])
-      return response.ok({ message: 'User left channel' })
     }
   }
 
