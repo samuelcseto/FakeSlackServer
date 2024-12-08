@@ -12,6 +12,7 @@ export default class extends BaseSchema {
       table.string('nickname').unique()
       table.string('email', 254).notNullable().unique()
       table.string('password').notNullable()
+      table.boolean('notifications_only_mentions').defaultTo(false)
 
       table.timestamp('created_at').notNullable()
       table.timestamp('updated_at').nullable()
