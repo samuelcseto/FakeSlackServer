@@ -1,6 +1,5 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import Channel from '#models/channel'
-import User from '#models/user'
 import Message from '#models/message'
 
 export default class ChannelsController {
