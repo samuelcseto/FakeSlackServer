@@ -22,7 +22,10 @@ router
   })
   .prefix('auth')
 
-router.post('switch-status', [UserController, 'switchStatus']).use(middleware.auth())
+router.put('switch-status', [UserController, 'switchStatus']).use(middleware.auth())
+router
+  .put('switch-notifications', [UserController, 'switchNotificationsOnlyMentions'])
+  .use(middleware.auth())
 
 router.get('/channels', [ChannelsController, 'getChannels']).use(middleware.auth())
 router.post('/channels', [ChannelsController, 'create']).use(middleware.auth())
