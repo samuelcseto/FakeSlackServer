@@ -271,7 +271,7 @@ app.ready(() => {
         return
       }
 
-      // Check if admin of channel is voting
+      // Check if author of channel is voting
       if (channel.authorId === (socket.data.user as User).id) {
         await kickedUser.related('channels').detach([channel.id])
         await kickedUser.related('kicksReceived').query().where('channel_id', channel.id).delete()
